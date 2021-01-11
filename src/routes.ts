@@ -1,12 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import Upload from './upload';
 import db from './db';
+import Controller from './controller';
 
 const router = Router();
 
 export default (options: any) => {
 	const upload = new Upload(options.uploadOptions);
 	const database = new db();
+	const controller = new Controller(database);
 
 	router.post(
 		'/single',
@@ -17,9 +19,7 @@ export default (options: any) => {
 		}
 	);
 
-	router.get('/:url', (req: Request, res: Response, next: NextFunction) => {
-		console.log(req.file);
-	});
+	router.get('/:publicId', controller.getAsset);
 
 	return router;
 };

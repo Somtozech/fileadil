@@ -9,6 +9,7 @@ interface UploadFile {
 	url: string;
 	uploaded_at: Date;
 	mimetype: string;
+	resource_id: string;
 }
 
 interface File {
@@ -22,7 +23,12 @@ interface File {
 	path: string;
 }
 
-export default class Database {
+export interface IDatabase {
+	add(file: File): Promise<UploadFile>;
+	getFile(id: string): Promise<UploadFile>;
+}
+
+export default class Database implements IDatabase {
 	private db: any;
 	private source: string;
 	constructor(path = 'db.json') {
@@ -38,7 +44,7 @@ export default class Database {
 	}
 
 	/** File - Multer File */
-	async add(file: File): Promise<UploadFile> {
+	async add(file: File) {
 		const newFile: UploadFile = {
 			id: generateRandomString(16),
 			name: file.filename,
@@ -46,12 +52,16 @@ export default class Database {
 			mimetype: file?.mimetype,
 			uploaded_at: new Date(),
 			url: file.path,
+			resource_id: file.path,
 		};
-
-		console.log(newFile);
 
 		this.db.get('files').push(newFile).write();
 
 		return newFile;
+	}
+
+	async getFile(id: string) {
+		const file = this.db.get('files').find({ id }).value();
+		return file;
 	}
 }
